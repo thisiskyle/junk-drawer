@@ -2,65 +2,66 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
-// TODO: Add more juicing classes like smooth following.
-// TODO: Maybe add some more options for slomo, etc.
-
-// juice up the camera with some camera shake
-public class CameraShake2D: MonoBehaviour
+public class CameraJuice2D: MonoBehaviour
 {
     private bool dirty = false;
     private float friction = 1f;
-    private float stress = 0f;
-    private float shake { get { return stress * stress; } }
+    private float juice = 0f;
+    private float shake { get { return juice * juice; } }
     private float maxAngle = 10f;
     private float maxOffset = 0.5f;
-    private Transform initialTransform = null;
+    Vector3 startpos;
+    Quaternion startrot;
 
-    
 
     void Update()
     {
-        if(stress != 0)
+        if(juice != 0)
         {
             if(!dirty)
             {
-                initialTransform = transform;
+                StorePosition();
+                StoreRotation();
                 dirty = true;
             }
             ApplyStress();
             ApplyFriction();
         }
     }
-    
-    public void Add(float value)
+    public void AddJuice(float value)
     {
-        stress = Mathf.Clamp01(stress + value);
+        juice += value;
+        juice = Mathf.Clamp01(juice);
     }
-
     private void ApplyStress()
     {
         var seed = Random.Range(-100f, 100f);
         float offsetX = maxOffset * shake * GetNoise(seed); // x offset
         float offsetY = maxOffset * shake * GetNoise(seed + 1); // y offset
         float angle = maxAngle * shake * GetNoise(seed + 2); // angle
-        transform.position = initialTransform.position + new Vector3(offsetX, offsetY, 0);
-        transform.rotation = Quaternion.Euler(new Vector3(0, 0, initialTransform.rotation.z + angle));
+        transform.position = startpos + new Vector3(offsetX, offsetY, 0);
+        transform.rotation = Quaternion.Euler(new Vector3(0, 0, startrot.z + angle));
     }
-
     private void ApplyFriction()
     {
-        stress -= friction * Time.deltaTime; // remove stress over time
-        if (stress <= 0)
+        juice -= friction * Time.deltaTime; // remove trauma over time
+        if (juice <= 0)
         {
-            stress = 0;
+            juice = 0;
             dirty = false;
         }
     }
-
     private float GetNoise(float seed)
     {
         return Mathf.PerlinNoise(seed, seed) * Time.timeScale * Random.Range(-1, 1);
     }
+    private void StorePosition()
+    {
+        startpos = transform.position;
+    }
+    private void StoreRotation()
+    {
+        startrot = transform.rotation;
+    }
 }
-
+}

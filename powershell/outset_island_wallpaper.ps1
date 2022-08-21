@@ -23,22 +23,27 @@ Add-Type -TypeDefinition $setwallpapersrc
 
 
 $sunrise = "S:\dev\arch-setup\wallpaper\outset_sunrise.png"
-$sunset = "S:\dev\arch-setup\wallpaper\outset_sunset.png"
 $day = "S:\dev\arch-setup\wallpaper\outset_day.png"
+$sunset = "S:\dev\arch-setup\wallpaper\outset_sunset.png"
 $night = "S:\dev\arch-setup\wallpaper\outset_night.png"
 
+$sunriseStart = Get-Date '07:00' 
 $dayStart = Get-Date '10:00' 
 $sunsetStart = Get-Date '17:00' 
 $nightStart = Get-Date '22:00' 
-$sunriseStart = Get-Date '07:00' 
 
 
 while(1)
 {
     $now = Get-Date
 
+    # sunrise
+    if($now.TimeOfDay -ge $sunriseStart.TimeOfDay -and $now.TimeOfDay -lt $dayStart.TimeOfDay)
+    {
+        [WallpaperHandler]::SetWallpaper($sunrise)
+    }
     # day
-    if($now.TimeOfDay -ge $dayStart.TimeofDay -and $now.TimeOfDay -lt $sunsetStart.TimeOfDay)
+    elseif($now.TimeOfDay -ge $dayStart.TimeofDay -and $now.TimeOfDay -lt $sunsetStart.TimeOfDay)
     {
         [WallpaperHandler]::SetWallpaper($day)
     }
@@ -48,15 +53,10 @@ while(1)
         [WallpaperHandler]::SetWallpaper($sunset)
     }
     # night
-    elseif($now.TimeOfDay -ge $nightStart.TimeofDay -and $now.TimeOfDay -lt $sunriseStart.TimeOfDay)
+    else
     {
         [WallpaperHandler]::SetWallpaper($night)
     }
-    # sunrise
-    else
-    {
-        [WallpaperHandler]::SetWallpaper($sunrise)
-    }
 
-    Start-Sleep -Seconds (1*60)
+    Start-Sleep -Seconds (10*60)
 }
