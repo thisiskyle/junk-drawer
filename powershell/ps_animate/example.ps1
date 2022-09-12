@@ -1,4 +1,4 @@
-Using module S:\dev\junk-drawer\powershell\ps_animate\ps_animate.psm1
+. $PSScriptRoot\ps_animate.ps1
 
 
 $frames = @(
@@ -9,8 +9,10 @@ $frames = @(
 )
 
 
-$animator = [Animator]::new($frames, $true)
+$animator = [Animator]::new($frames, $false)
 
+Write-Host "Test   " -NoNewline
 $animator.AutoPlay(50)
+
 
 

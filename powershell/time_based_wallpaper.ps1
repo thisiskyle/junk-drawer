@@ -21,11 +21,12 @@ $setwallpapersrc = @"
 Add-Type -TypeDefinition $setwallpapersrc
 
 
+$wallpaperpath = "S:\dev\arch_utils\wallpaper"
 
-$sunrise = "S:\dev\arch-setup\wallpaper\outset_sunrise.png"
-$day = "S:\dev\arch-setup\wallpaper\outset_day.png"
-$sunset = "S:\dev\arch-setup\wallpaper\outset_sunset.png"
-$night = "S:\dev\arch-setup\wallpaper\outset_night.png"
+$sunrise = "$($wallpaperpath)\outset_sunrise.png"
+$day = "$($wallpaperpath)\outset_day.png"
+$sunset = "$($wallpaperpath)\outset_sunset.png"
+$night = "$($wallpaperpath)\outset_night.png"
 
 $sunriseStart = Get-Date '07:00' 
 $dayStart = Get-Date '10:00' 

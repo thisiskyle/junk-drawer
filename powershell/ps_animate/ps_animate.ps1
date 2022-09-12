@@ -1,4 +1,3 @@
-
 class Animator 
 {
     # keeps track of the current frame
@@ -6,7 +5,8 @@ class Animator
     # string array of the frames of the animations
     [string[]]$frames
     # gets the character string for moving the cursor into the proper position
-    [string]$backChar
+    [string]$backStr
+    [string]$clearStr
 
     # constructor for the Animator class
     Animator([string[]]$frames, [bool]$front) 
@@ -22,12 +22,23 @@ class Animator
         {
             $this.SetRenderPositionNormal()
         }
+
+        # build the string for clearing a line
+        $this.clearStr = ""
+
+        for(($i = 0); ($i -lt 500); ($i++))
+        {
+            $this.clearStr = "$($this.clearStr)"
+        }
+        $this.clearStr = "`r$($this.clearStr)`r"
     }
 
     # Writes the next frame to the host
     [void] RenderNextFrame()
     {
-        Write-Host "$($this.backChar)$($this.GetNextFrame())" -NoNewline
+        Write-Host "$($this.backStr)$($this.GetNextFrame())" -NoNewline
+        #$this.Clear()
+        #Write-Host "$($this.GetNextFrame())" -NoNewline
     }
 
     # returns the string that is the next frame
@@ -40,16 +51,16 @@ class Animator
     # sets the back char to render the animation at the begining of a line
     [void] SetRenderPositionFront()
     {
-        $this.backChar = "`r"
+        $this.backStr = "`r"
     }
 
     # sets the back char to render the animation at the end of the line
     [void] SetRenderPositionNormal()
     {
-        $this.backChar = ""
+        $this.backStr = ""
         for(($i = 0); ($i -lt $this.frames[0].length); ($i++))
         {
-            $this.backChar = "$($this.backChar)`b"
+            $this.backStr = "$($this.backStr)`b"
         }
     }
 
@@ -72,7 +83,7 @@ class Animator
     # clear the line
     [void] Clear()
     {
-        # we do a backchar to return to begining of a line, then a bunch spaces to clear the line, then a return again to start of the line
-        Write-Host "`r                                                                                                                                            `r" -NoNewline
+        Write-Host "$($this.clearStr)" -NoNewline
     }
+
 }
