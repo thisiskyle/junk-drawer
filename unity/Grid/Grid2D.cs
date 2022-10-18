@@ -2,66 +2,80 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Grid2D<T> : IGrid
+// 
+// TODO/feature: currently this class only really works assuming its always using the x and y axis,
+//               maybe we should fix that?
+//
+// TODO/feature: currently returning a 'world position' assumes 3rd axis is 0, maybe we should let the user provide
+//               a value they would like the extra axis to be set to
+//               
+//
+public class Grid2D
 {
-    private Vector2 dimensions;
+
     private Vector2 cellScale;
-    // TODO: maybe this could be Vector3 so we can offset the grid on a certain Z axis
+    // TODO/feature: maybe this could be Vector3 so we can offset the grid on a certain Z axis
     private Vector2 offsetFromZero; 
     private bool useZ = false;
-    private T[] cells;
 
-    public int Cols { get { return (int)dimensions.x; } private set {} }
-    public int Rows { get { return (int)dimensions.y; } private set {} }
+    private int cols;
+    private int rows;
+
+    public int Cols { get { return cols; } private set {} }
+    public int Rows { get { return rows; } private set {} }
+    public int Size { get { return cols * rows; } private set {} }
+    public Vector2 CellScale { get { return cellScale; } private set {} }
 
 
+    //
+    // Constructor
+    //
     public Grid2D(int cols, int rows, Vector2 cellScale, Vector2 offsetFromZero, bool zFlag = false)
     {
-        dimensions = new Vector2((float)cols, (float)rows);
+        this.rows = rows == 0 ? 1 : rows;
+        this.cols = cols == 0 ? 1 : cols;
         this.offsetFromZero = offsetFromZero;
         this.cellScale = cellScale;
         useZ = zFlag;
-        cells = new T[cols * rows];
     }
 
+    //
+    // Constructor
+    //
     public Grid2D(int cols, int rows, bool zFlag = false)
     {
-        dimensions = new Vector2((float)cols, (float)rows);
+        this.rows = rows == 0 ? 1 : rows;
+        this.cols = cols == 0 ? 1 : cols;
         this.offsetFromZero = Vector3.zero;
         this.cellScale = new Vector3(1, 1, 1);
         useZ = zFlag;
-        cells = new T[cols * rows];
     }
 
-    
-    // Access a sepcific index in a one dimensional array with (x, y) coords using this method.
+    //
+    // converts cartesian coords to the corresponding index
+    //
     public int Cart2Index(int x, int y)
     {
-        return (y * Cols) + x;
-    }
-    // Cart2Index overload
-    public int Cart2Index(Vector3 pos)
-    {
-        return ((int)pos.y * Cols) + (int)pos.x;
+        return (y * cols) + x;
     }
 
-    // Calculate the cartesian coordinates from the index of a one dimensional array 
-    public Vector2 Index2Cart(int index)
+    static public int Cart2Index(int x, int y, int cols)
     {
-        if(Cols == 0) return Vector3.zero;
-        return new Vector2(Mathf.FloorToInt(index % Cols), Mathf.FloorToInt(index / Cols));
+        return (y * cols) + x;
     }
-    
-    // convert a world position to a grid position
-    public Vector3 World2Grid(Vector3 worldPos)
+
+    //
+    // converts cartesian coords to the corresponding index
+    //
+    public int Cart2Index(Vector2 pos)
     {
-        int x = (int)Mathf.Floor((worldPos.x / cellScale.x) - offsetFromZero.x);
-        int y = (int)Mathf.Floor((worldPos.y / cellScale.y) - offsetFromZero.y);
-        return new Vector3(x, y);
+        return ((int)pos.y * cols) + (int)pos.x;
     }
-    
+
+    //
     // convert grid coordinates to that location in world space
-    public Vector3 Grid2World(Vector3 gridPos)
+    //
+    public Vector3 Cart2World(Vector2 gridPos)
     {
         Vector3 naturalOffset = new Vector3(cellScale.x / 2, cellScale.y / 2, 0);
         float x = (gridPos.x * cellScale.x) + naturalOffset.x + offsetFromZero.x;
@@ -71,51 +85,78 @@ public class Grid2D<T> : IGrid
         else return new Vector3(x, y, 0f);
     }
 
+    //
     // convert grid coordinates to that location in world space
-    public Vector3 Grid2World(int x, int y)
+    //
+    public Vector3 Cart2World(int x, int y)
     {
-        return Grid2World(new Vector3(x, y, 0));
+        return Cart2World(new Vector2(x, y));
     }
 
+    //
+    // convert an index to its cartesian coords
+    //
+    public Vector2 Index2Cart(int index)
+    {
+        return new Vector2(Mathf.FloorToInt(index % cols), Mathf.FloorToInt(index / cols));
+    }
+
+    //
     // convert the index of a 1D array of a grid, into a world position
+    //
     public Vector3 Index2World(int index)
     {
-        return Grid2World(Index2Cart(index));
+        return Cart2World(Index2Cart(index));
     }
 
-    // convert the world position to the index of a 1D array for a grid
+    //
+    // convert a world position to a grid position
+    //
+    public Vector2 World2Cart(Vector3 worldPos)
+    {
+        int x = (int)Mathf.Floor((worldPos.x / cellScale.x) - offsetFromZero.x);
+        int y = (int)Mathf.Floor((worldPos.y / cellScale.y) - offsetFromZero.y);
+        return new Vector2(x, y);
+    }
+
+    //
+    // convert a world position to an index 
+    //
     public int World2Index(Vector3 pos)
     {
-        return Cart2Index(World2Grid(pos));
+        return Cart2Index(World2Cart(pos));
     }
 
+    //
+    // checks if the provided Vector2 is contained withing the grid
+    //
     public bool Contains(Vector2 gridpos)
     {
-       return (gridpos.x >= 0 && gridpos.x < Cols) && (gridpos.y >= 0 && gridpos.y < Rows);
+       return (gridpos.x >= 0 && gridpos.x < cols) && (gridpos.y >= 0 && gridpos.y < rows);
     }
 
+    //
+    // checks if the provided x and y coords are contained withing the grid
+    //
     public bool Contains(int x, int y)
     {
-       return (x >= 0 && x < Cols) && (y >= 0 && y < Rows);
+       return (x >= 0 && x < cols) && (y >= 0 && y < rows);
     }
 
-    public T GetCell(int x, int y)
+    //
+    // checks if the provided index is contained withing the grid
+    //
+    public bool Contains(int index)
     {
-        return cells[Cart2Index(x, y)];
+       return (index < Size) && (index >= 0);
     }
 
-    public T GetCell(Vector2 pos)
+    //
+    // checks if the provided Vector3 is contained withing the grid
+    //
+    public bool Contains(Vector3 pos)
     {
-        return cells[Cart2Index((int)pos.x, (int)pos.y)];
-    }
-
-    public void SetCell(int x, int y, T obj)
-    {
-        cells[Cart2Index(x, y)] = obj;
-    }
-
-    public void SetCell(Vector2 pos, T obj)
-    {
-        cells[Cart2Index((int)pos.x, (int)pos.y)] = obj;
+       Vector2 gridpos = World2Cart(pos);
+       return (gridpos.x >= 0 && gridpos.x < cols) && (gridpos.y >= 0 && gridpos.y < rows);
     }
 }
